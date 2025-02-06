@@ -4,7 +4,7 @@ const sqlite3 = require('sqlite3').verbose();
 const app=express();
 const port = 3000;
 
-const db = new sqlite3.Database('./test.db', (err) => {
+const db = new sqlite3.Database('./project.db', (err) => {
     if (err) {
       console.error('Error connecting to the database:', err.message);
     } else {
