@@ -1,6 +1,8 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
+const { generateExcel } = require('./excelGenerator');
+const path = require('path');
 
 const app = express();
 const port = 3000;
@@ -91,6 +93,24 @@ app.delete('/employees/:id', (req, res) => {
       res.status(500).send('Error deleting data');
     } else {
       res.send(`Employee deleted with ID: ${req.params.id}`);
+    }
+  });
+});
+
+app.get('/schedule/:id', (req, res) => {
+  const query = 'SELECT * FROM schedulesdb WHERE person_id = ?';
+  db.all(query, [req.params.id], async (err, rows) => {
+    if (err) {
+      console.error('Error fetching data:', err.message);
+      res.status(500).send('Error fetching data');
+    } else {
+      if (rows.length === 0) {
+        res.status(404).send('No schedule found for the given employee ID');
+      } else {
+        const filePath = path.join(__dirname, `${req.params.id}_schedule.xlsx`);
+        await generateExcel(rows, filePath);
+        res.download(filePath);
+      }
     }
   });
 });
