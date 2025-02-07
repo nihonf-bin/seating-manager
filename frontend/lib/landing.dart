@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:online_seating_chart/addmember.dart';
 import 'package:online_seating_chart/appbar.dart';
+import 'package:online_seating_chart/editmember.dart';
 import 'package:online_seating_chart/styles.dart';
 
 class LandingPage extends StatefulWidget {

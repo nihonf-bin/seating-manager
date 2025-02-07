@@ -35,13 +35,25 @@ class EditMember extends StatelessWidget {
                       children: [
                         Text('Company Name: ', style: TextStyle(fontSize: 14)),
                         ],
+                        
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Teams: ', style: TextStyle(fontSize: 14)),
-                         ],
                          
+                        Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text('Team D', style: TextStyle(fontSize: 14)),
+                          Container(
+                            height: 40,
+                            width: 40,
+                            color: Colors.blue,
+                          ),
+                        ],
+                      ),
+                      ],  
                     ),
                      Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -49,24 +61,9 @@ class EditMember extends StatelessWidget {
                         Text('Seat: ', style: TextStyle(fontSize: 14)),
                          ],   
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                         SizedBox(height: 10),
-                        Container(
-                          height: 40,
-                          width: 40,
-                          color: Colors.red
-                        ), 
-                        SizedBox(width:10),
-                        Container(
-                          height: 40,
-                          width: 40,
-                          color: Colors.yellow)
-                         ],
-                    ),
+                    ElevatedButton(onPressed:(){}, child:Text('Edit Member')),
                     SizedBox(height: 10),
-                    ElevatedButton(onPressed:(){}, child:Text('Add Member'))
+                    ElevatedButton(onPressed:(){}, child:Text('Remove Member'))
                   ],
                 ),
               ),
