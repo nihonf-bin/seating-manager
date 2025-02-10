@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:online_seating_chart/addmember.dart';
 import 'package:online_seating_chart/editmember.dart';
+import 'package:online_seating_chart/login.dart';
 import 'package:online_seating_chart/seatmap.dart';
 import 'package:online_seating_chart/styles.dart';
 
