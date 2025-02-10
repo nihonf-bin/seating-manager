@@ -120,11 +120,16 @@ router.get('/schedule/:id', (req, res) => {
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
+  console.log('Login attempt with username:', username);
+  console.log('Login attempt with password:', password);
+
   try {
     const [result] = await db.query(
       'SELECT * FROM logincredentials WHERE username = ? AND password = ?',
       [username, password]
     );
+
+    console.log(result);
 
     if (result.length > 0) {
       res.json({ success: true });

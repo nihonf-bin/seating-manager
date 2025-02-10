@@ -18,9 +18,17 @@ void main() {
 final GoRouter _router = GoRouter(
   routes: [
     GoRoute(
-      name: 'landing',
+      name: 'login',
       path: '/',
       builder: (context, state) => const LoginPage(),
+      routes: [
+
+      ],
+    ),
+    GoRoute(
+      name: 'landing',
+      path: '/landing',
+      builder: (context, state) => const LandingPage(),
       routes: [
 
       ],
