@@ -1,7 +1,7 @@
 const express = require('express');
 const { generateExcel } = require('./excelGenerator');
 const path = require('path');
-const db = require('./db'); // Import the MySQL database connection
+const db = require('./db'); 
 
 const router = express.Router();
 
@@ -40,7 +40,7 @@ router.get('/employees', (req, res) => {
   const query = 'SELECT * FROM employeedb';
   db.query(query, (err, rows) => {
     if (err) {
-      console.error('Error fetching data:', err.message);
+      console.error('Er ror fetching data:', err.message);
       res.status(500).send('Error fetching data');
     } else {
       res.json(rows);
