@@ -125,6 +125,8 @@ router.post('/login', async (req, res) => {
       'SELECT * FROM logincredentials WHERE username = ? AND password = ?',
       [username, password]
     );
+    console.log(username);
+    console.log(password);
 
     if (result.length > 0) {
       res.json({ success: true });
