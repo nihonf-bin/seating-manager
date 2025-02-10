@@ -5,17 +5,12 @@ const db = require('./db');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
+// Fetch all employees
+router.get('/employees', (req, res) => {
   const query = 'SELECT * FROM employeedb';
   db.query(query)
     .then(([rows]) => {
-      console.log('Fetched rows:', rows);
-      res.send(`
-        <h1>Employee Data</h1>
-        <ul>
-          ${rows.map(row => `<li>employeeid: ${row.employeeid}, employeename: ${row.employeename}, teamcolour: ${row.teamcolour}</li>`).join('')}
-        </ul>
-      `);
+      res.json(rows);
     })
     .catch(err => {
       console.error('Error fetching data:', err.message);
@@ -23,6 +18,24 @@ router.get('/', (req, res) => {
     });
 });
 
+// Fetch a specific employee by ID
+router.get('/employees/:id', (req, res) => {
+  const query = 'SELECT * FROM employeedb WHERE employeeid = ?';
+  db.query(query, [req.params.id])
+    .then(([rows]) => {
+      if (rows.length > 0) {
+        res.json(rows[0]);
+      } else {
+        res.status(404).send('Employee not found');
+      }
+    })
+    .catch(err => {
+      console.error('Error fetching data:', err.message);
+      res.status(500).send('Error fetching data');
+    });
+});
+
+// Add a new employee
 router.post('/employees', (req, res) => {
   const { employeeid, employeename, companyname, teamcolour } = req.body;
   const query = 'INSERT INTO employeedb (employeeid, employeename, companyname, teamcolour) VALUES (?, ?, ?, ?)';
@@ -36,36 +49,17 @@ router.post('/employees', (req, res) => {
     });
 });
 
-router.get('/employees', (req, res) => {
-  const query = 'SELECT * FROM employeedb';
-  db.query(query)
-    .then(([rows]) => {
-      res.json(rows);
-    })
-    .catch(err => {
-      console.error('Error fetching data:', err.message);
-      res.status(500).send('Error fetching data');
-    });
-});
-
-router.get('/employees/:id', (req, res) => {
-  const query = 'SELECT * FROM employeedb WHERE employeeid = ?';
-  db.query(query, [req.params.id])
-    .then(([rows]) => {
-      res.json(rows[0]);
-    })
-    .catch(err => {
-      console.error('Error fetching data:', err.message);
-      res.status(500).send('Error fetching data');
-    });
-});
-
+// Update an existing employee
 router.put('/employees/:id', (req, res) => {
   const { employeename, companyname, teamcolour } = req.body;
   const query = 'UPDATE employeedb SET employeename = ?, companyname = ?, teamcolour = ? WHERE employeeid = ?';
   db.query(query, [employeename, companyname, teamcolour, req.params.id])
-    .then(() => {
-      res.send(`Employee updated with ID: ${req.params.id}`);
+    .then(([results]) => {
+      if (results.affectedRows > 0) {
+        res.send(`Employee updated with ID: ${req.params.id}`);
+      } else {
+        res.status(404).send('Employee not found');
+      }
     })
     .catch(err => {
       console.error('Error updating data:', err.message);
@@ -73,11 +67,16 @@ router.put('/employees/:id', (req, res) => {
     });
 });
 
+// Delete an employee
 router.delete('/employees/:id', (req, res) => {
   const query = 'DELETE FROM employeedb WHERE employeeid = ?';
   db.query(query, [req.params.id])
-    .then(() => {
-      res.send(`Employee deleted with ID: ${req.params.id}`);
+    .then(([results]) => {
+      if (results.affectedRows > 0) {
+        res.send(`Employee deleted with ID: ${req.params.id}`);
+      } else {
+        res.status(404).send('Employee not found');
+      }
     })
     .catch(err => {
       console.error('Error deleting data:', err.message);
@@ -85,6 +84,7 @@ router.delete('/employees/:id', (req, res) => {
     });
 });
 
+// Fetch all schedules
 router.get('/schedule', (req, res) => {
   const query = 'SELECT * FROM schedules';
   db.query(query)
@@ -97,6 +97,7 @@ router.get('/schedule', (req, res) => {
     });
 });
 
+// Fetch a specific schedule by person ID
 router.get('/schedule/:id', (req, res) => {
   const query = 'SELECT * FROM schedules WHERE person_id = ?';
   db.query(query, [req.params.id])
@@ -115,6 +116,7 @@ router.get('/schedule/:id', (req, res) => {
     });
 });
 
+// Login route
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
