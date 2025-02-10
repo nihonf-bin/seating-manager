@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_seating_chart/styles.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -25,7 +26,7 @@ class LoginPage extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: Styles.white,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(8.0),
               boxShadow: [
                 BoxShadow(
@@ -39,14 +40,6 @@ class LoginPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  "Login",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 16),
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(
@@ -66,17 +59,20 @@ class LoginPage extends StatelessWidget {
                 ),
                 SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async{
                     // Handle login logic here
-                    String email = emailController.text;
+                    String username = emailController.text;
                     String password = passwordController.text;
-                    print('Login with email: $email, password: $password');
+                    print('Login with email: $username, password: $password');
+                    var url = Uri.https('http://localhost:3000', '/login');
+                    var response = await http.post(url, body: {'username': username, 'password': password});
+                    print('Response status: ${response.statusCode}');
+                    print('Response body: ${response.body}');
                   },
                   child: Text('Login'),
                 ),
                 SizedBox(height: 16),
                 // Text("If you don't have an account, click here to sign up"),
-                // SizedBox(height: 16),
                 // ElevatedButton(
                 //   onPressed: () {
                 //     // Navigate to signup page
