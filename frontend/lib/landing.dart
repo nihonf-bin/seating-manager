@@ -4,10 +4,6 @@ import 'package:online_seating_chart/appstate.dart';
 import 'package:online_seating_chart/floors/gokai.dart';
 import 'package:online_seating_chart/floors/rokkai.dart';
 import 'package:online_seating_chart/floors/yonkai.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:online_seating_chart/addmember.dart';
-import 'package:online_seating_chart/appbar.dart';
-import 'package:online_seating_chart/editmember.dart';
 import 'package:online_seating_chart/styles.dart';
 import 'package:provider/provider.dart';
 

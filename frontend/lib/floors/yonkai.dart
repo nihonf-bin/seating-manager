@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_seating_chart/addmember.dart';
 import 'package:online_seating_chart/editmember.dart';
-import 'package:online_seating_chart/login.dart';
 import 'package:online_seating_chart/seatmap.dart';
 import 'package:online_seating_chart/styles.dart';
 
@@ -15,12 +14,24 @@ class Yonkai extends StatefulWidget {
 class _YonkaiState extends State<Yonkai> {
   bool vacantToggle = false;
   bool occupiedToggle = false;
+  Map<String, dynamic> selectedMemberData = {};
+
+  Map<String, dynamic> onSeatClicked(Map<String, dynamic> memberData) {
+    selectedMemberData = memberData;
+    setState(() {
+      if (selectedMemberData['isOccupied'] == false) {
+        vacantToggle = !vacantToggle;
+      } else {
+        occupiedToggle = !occupiedToggle;
+      };
+    });
+    return selectedMemberData;
+  }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
-    final double sw = Styles.screenWidth(context);
     final int totalSeats = 173; // Variable to store the total number of seats
     final int vacantSeats = 1; // Variable to store the number of vacant seats
     final int teams = 6; // Variable to store the number of teams
@@ -28,17 +39,18 @@ class _YonkaiState extends State<Yonkai> {
 
     return Column(
       children: [
+        SizedBox(height: screenWidth * 0.02),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(child: Seatmap()),
+            Expanded(child: Seatmap(floor: 4, selectedMemberData: onSeatClicked)),
             Visibility(
               visible: vacantToggle,
               child: AddMember()
               ),
             Visibility(
               visible: occupiedToggle,
-              child: EditMember()
+              child: EditMember(seatData: selectedMemberData)
               ),
             Visibility(
               visible: vacantToggle == occupiedToggle,

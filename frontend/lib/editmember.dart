@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:online_seating_chart/styles.dart';
 
-class EditMember extends StatelessWidget {
-  const EditMember({super.key});
+class EditMember extends StatefulWidget {
+  const EditMember({
+    super.key, 
+    this.seatData,
+  });
 
+  final Map<String, dynamic>? seatData;
+
+  @override
+  State<EditMember> createState() => _EditMemberState();
+}
+
+class _EditMemberState extends State<EditMember> {
   @override
   Widget build(BuildContext context) {
     // double screenWidth = MediaQuery.of(context).size.width;
@@ -12,56 +23,74 @@ class EditMember extends StatelessWidget {
       height: 450,
       width: 380,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
+        border: Border.all(width: 0),
+        color: Styles.white,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Edit member',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Name: ', style: TextStyle(fontSize: 14)),
+                Text('Name: ', style: TextStyle(fontSize: 20)),
+                Text('${widget.seatData?['memberName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Company Name: ', style: TextStyle(fontSize: 14)),
+                Text('Company Name: ', style: TextStyle(fontSize: 20)),
+                Text('${widget.seatData?['memberCompanyName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ],
                 
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Teams: ', style: TextStyle(fontSize: 14)),
-                 
+                Text('Teams: ', style: TextStyle(fontSize: 20)),
                 Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text('Team D', style: TextStyle(fontSize: 14)),
                   Container(
-                    height: 40,
-                    width: 40,
-                    color: Colors.blue,
+                    height: 18,
+                    width: 18,
+                    color: widget.seatData?['seatColor'],
                   ),
+                  Text('${widget.seatData?['memberTeamName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ],
               ),
               ],  
             ),
-             Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Seat: ', style: TextStyle(fontSize: 14)),
+                Text('Seat: ', style: TextStyle(fontSize: 20)),
+                Text('${widget.seatData?['seatNumber']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                  ],   
             ),
-            ElevatedButton(onPressed:(){}, child:Text('Edit Member')),
+            SizedBox(height: 30),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed:() {},
+                style: Styles.buttonStyle(context),
+                child:Text('Edit Member')
+              )
+            ),
             SizedBox(height: 10),
-            ElevatedButton(onPressed:(){}, child:Text('Remove Member'))
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed:() {}, 
+                style: Styles.buttonStyle(context),
+                child:Text('Remove Member')
+              )
+            )
           ],
         ),
       ),
