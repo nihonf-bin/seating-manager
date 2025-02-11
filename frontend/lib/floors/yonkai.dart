@@ -14,6 +14,19 @@ class Yonkai extends StatefulWidget {
 class _YonkaiState extends State<Yonkai> {
   bool vacantToggle = false;
   bool occupiedToggle = false;
+  Map<String, dynamic> selectedMemberData = {};
+
+  Map<String, dynamic> onSeatClicked(Map<String, dynamic> memberData) {
+    selectedMemberData = memberData;
+    setState(() {
+      if (selectedMemberData['isOccupied'] == false) {
+        vacantToggle = !vacantToggle;
+      } else {
+        occupiedToggle = !occupiedToggle;
+      };
+    });
+    return selectedMemberData;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,17 +39,18 @@ class _YonkaiState extends State<Yonkai> {
 
     return Column(
       children: [
+        SizedBox(height: screenWidth * 0.02),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(child: Seatmap()),
+            Expanded(child: Seatmap(floor: 4, selectedMemberData: onSeatClicked)),
             Visibility(
               visible: vacantToggle,
               child: AddMember()
               ),
             Visibility(
               visible: occupiedToggle,
-              child: EditMember()
+              child: EditMember(seatData: selectedMemberData)
               ),
             Visibility(
               visible: vacantToggle == occupiedToggle,

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 class AddMember extends StatelessWidget {
-  const AddMember({super.key});
+  const AddMember({
+    super.key,
+    this.seatData,
+  });
+  final Map<String, dynamic>? seatData;
+
 
   @override
   Widget build(BuildContext context) {

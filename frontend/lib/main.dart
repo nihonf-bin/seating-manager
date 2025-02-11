@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:online_seating_chart/appstate.dart';
 import 'package:online_seating_chart/landing.dart';
-import 'package:online_seating_chart/login.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -18,16 +17,8 @@ void main() {
 final GoRouter _router = GoRouter(
   routes: [
     GoRoute(
-      name: 'login',
-      path: '/',
-      builder: (context, state) => const LoginPage(),
-      routes: [
-
-      ],
-    ),
-    GoRoute(
       name: 'landing',
-      path: '/landing',
+      path: '/',
       builder: (context, state) => const LandingPage(),
       routes: [
 
