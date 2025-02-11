@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:online_seating_chart/styles.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -83,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
                     var responseBody = jsonDecode(response.body);
                     if (responseBody['success'] == true) {
                       // Navigate to landing page
-                      Navigator.pushReplacementNamed(context, '/landing');
+                      context.go('/landing');
                     } else {
                       // Show popup message
                       showDialog(

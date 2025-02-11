@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_seating_chart/addmember.dart';
 import 'package:online_seating_chart/editmember.dart';
-import 'package:online_seating_chart/login.dart';
 import 'package:online_seating_chart/seatmap.dart';
 import 'package:online_seating_chart/styles.dart';
 
@@ -20,7 +19,6 @@ class _YonkaiState extends State<Yonkai> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
-    final double sw = Styles.screenWidth(context);
     final int totalSeats = 173; // Variable to store the total number of seats
     final int vacantSeats = 1; // Variable to store the number of vacant seats
     final int teams = 6; // Variable to store the number of teams
