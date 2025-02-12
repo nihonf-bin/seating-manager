@@ -76,23 +76,35 @@ router.put('/employees/:id', (req, res) => {
 });
 
 // Delete an employee
-router.delete('/employees/:id', (req, res) => {
-  const query = 'DELETE FROM employeedb WHERE employeeid = ?';
-  db.query(query, [req.params.id])
-    .then(([results]) => {
-      if (results.affectedRows > 0) {
+router.delete('/employees/:id', async (req, res) => {
+  const employeeId = req.params.id;
+  const updateSeatQuery = 'UPDATE seatarrangementdb SET employeeid = NULL, status = 0, timeoflastupdate = NOW() WHERE employeeid = ?';
+  const deleteEmployeeQuery = 'DELETE FROM employeedb WHERE employeeid = ?';
+
+  try {
+    // Update the seat arrangement
+    const [updateResults] = await db.query(updateSeatQuery, [employeeId]);
+
+    // Check if any seat was updated
+    if (updateResults.affectedRows > 0) {
+      // Delete the employee
+      const [deleteResults] = await db.query(deleteEmployeeQuery, [employeeId]);
+
+      if (deleteResults.affectedRows > 0) {
         res.json({
-          message: `Employee deleted with ID: ${req.params.id}`,
+          message: `Employee deleted with ID: ${employeeId}`,
           timestamp: new Date().toISOString()
         });
       } else {
         res.status(404).send('Employee not found');
       }
-    })
-    .catch(err => {
-      console.error('Error deleting data:', err.message);
-      res.status(500).send('Error deleting data');
-    });
+    } else {
+      res.status(404).send('No seat found for the given employee ID');
+    }
+  } catch (err) {
+    console.error('Error deleting data:', err.message);
+    res.status(500).send('Error deleting data');
+  }
 });
 
 // Fetch all schedules
