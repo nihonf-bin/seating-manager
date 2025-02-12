@@ -160,6 +160,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Fetch team counts
+
 router.get('/teamCounts', async (req, res) => {
   try {
     const teamQuery = 'SELECT * FROM teams';
@@ -184,6 +186,7 @@ router.get('/teamCounts', async (req, res) => {
   }
 });
 
+// Fetch all occupied seats
 router.get('/filled', async (req, res) => {
   const query = `
     SELECT s.seatid, e.employeeid, e.employeename, e.companyname, e.teamcolour, t.teamname
