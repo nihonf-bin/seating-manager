@@ -65,6 +65,17 @@ class _YonkaiState extends State<Yonkai> {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchTeamCounts() async {
+    var url = Uri.parse('http://localhost:3000/api/teamCounts');
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load team counts');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -73,183 +84,199 @@ class _YonkaiState extends State<Yonkai> {
     final int vacantSeats = 1; // Variable to store the number of vacant seats
     final int teams = 6; // Variable to store the number of teams
 
-    return Column(
-      children: [
-        SizedBox(height: screenWidth * 0.02),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (isSearchResultVisible)
-              IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: () {
-                  setState(() {
-                    isSearchResultVisible = false;
-                    occupiedToggle = false;
-                    vacantToggle = false;
-                  });
-                },
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: fetchTeamCounts(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          List<Map<String, dynamic>> teamCounts = snapshot.data!;
+
+          return Column(
+            children: [
+              SizedBox(height: screenWidth * 0.02),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (isSearchResultVisible)
+                    IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: () {
+                        setState(() {
+                          isSearchResultVisible = false;
+                          occupiedToggle = false;
+                          vacantToggle = false;
+                        });
+                      },
+                    ),
+                  Expanded(child: Seatmap(floor: 4, selectedMemberData: onSeatClicked)),
+                  Visibility(
+                    visible: vacantToggle,
+                    child: AddMember(),
+                  ),
+                  Visibility(
+                    visible: occupiedToggle,
+                    child: EditMember(seatData: selectedMemberData),
+                  ),
+                  Visibility(
+                    visible: vacantToggle == occupiedToggle,
+                    child: Container(
+                      margin: EdgeInsets.all(20.0),
+                      height: 450,
+                      width: 380,
+                      decoration: BoxDecoration(
+                        border: Border.all(width: 0),
+                        color: Styles.white,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(18.0), // Add padding parameter
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Status',
+                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                            SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Total seats: ', style: TextStyle(fontSize: 20)),
+                                Text('$totalSeats',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Vacant seats:', style: TextStyle(fontSize: 20)),
+                                Text('$vacantSeats',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Teams:', style: TextStyle(fontSize: 20)),
+                                Text('$teams',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            SizedBox(height: 20),
+                            Text("Last updated 4:59 PM, 2/5/2025", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                            SizedBox(height: 30),
+                            if (!isSearchResultVisible) ...[
+                              Text('Search member',
+                                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                              SizedBox(height: 10),
+                              TextField(
+                                controller: searchController,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  hintText: 'Enter employee ID',
+                                  hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                              SizedBox(height: 18),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    String memberId = searchController.text;
+                                    fetchMemberData(memberId);
+                                  },
+                                  style: Styles.buttonStyle(context),
+                                  child: Text('Search'),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            Expanded(child: Seatmap(floor: 4, selectedMemberData: onSeatClicked)),
-            Visibility(
-              visible: vacantToggle,
-              child: AddMember(),
-            ),
-            Visibility(
-              visible: occupiedToggle,
-              child: EditMember(seatData: selectedMemberData),
-            ),
-            Visibility(
-              visible: vacantToggle == occupiedToggle,
-              child: Container(
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        vacantToggle = !vacantToggle;
+                        occupiedToggle = false;
+                      });
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                          vacantToggle ? Colors.lightBlueAccent : Styles.primaryColor),
+                    ),
+                    child: Text(
+                      'Vacant seat click',
+                      style: TextStyle(color: Styles.white),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        occupiedToggle = !occupiedToggle;
+                        vacantToggle = false;
+                      });
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                          occupiedToggle ? Colors.lightBlueAccent : Styles.primaryColor),
+                    ),
+                    child: Text(
+                      'Occupied seat click',
+                      style: TextStyle(color: Styles.white),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
                 margin: EdgeInsets.all(20.0),
-                height: 450,
-                width: 380,
+                height: 180,
+                width: screenWidth,
                 decoration: BoxDecoration(
-                  border: Border.all(width: 0),
-                  color: Styles.white,
+                  border: Border.all(color: Colors.black),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(18.0), // Add padding parameter
+                  padding: const EdgeInsets.all(8.0), // Add padding parameter
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Status',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                      Text('Teams',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Total seats: ', style: TextStyle(fontSize: 20)),
-                          Text('$totalSeats',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Vacant seats:', style: TextStyle(fontSize: 20)),
-                          Text('$vacantSeats',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Teams:', style: TextStyle(fontSize: 20)),
-                          Text('$teams',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      SizedBox(height: 20),
-                      Text("Last updated 4:59 PM, 2/5/2025", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 30),
-                      if (!isSearchResultVisible) ...[
-                        Text('Search member',
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                        SizedBox(height: 10),
-                        TextField(
-                          controller: searchController,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: 'Enter employee ID',
-                            hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                        SizedBox(height: 18),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              String memberId = searchController.text;
-                              fetchMemberData(memberId);
-                            },
-                            style: Styles.buttonStyle(context),
-                            child: Text('Search'),
-                          ),
+                      for (var team in teamCounts) ...[
+                        Row(
+                          children: [
+                            Container(
+                              width: 10.0, // width of the box
+                              height: 10.0, // height of the box
+                              color: Color(int.parse(team['color'].substring(1), radix: 16) + 0xFF000000), // color of the box
+                            ),
+                            SizedBox(width: 10),
+                            Text(team['name'],
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            SizedBox(width: 10),
+                            Row(
+                              children: [
+                                Text('${team['count']}', style: TextStyle(fontSize: 14)),
+                                Icon(Icons.person, size: 16, color: Colors.black),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ],
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  vacantToggle = !vacantToggle;
-                  occupiedToggle = false;
-                });
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(
-                    vacantToggle ? Colors.lightBlueAccent : Styles.primaryColor),
-              ),
-              child: Text(
-                'Vacant seat click',
-                style: TextStyle(color: Styles.white),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  occupiedToggle = !occupiedToggle;
-                  vacantToggle = false;
-                });
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(
-                    occupiedToggle ? Colors.lightBlueAccent : Styles.primaryColor),
-              ),
-              child: Text(
-                'Occupied seat click',
-                style: TextStyle(color: Styles.white),
-              ),
-            ),
-          ],
-        ),
-        Container(
-          margin: EdgeInsets.all(20.0),
-          height: 180,
-          width: screenWidth,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0), // Add padding parameter
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Teams',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Container(
-                      width: 10.0, // width of the box
-                      height: 10.0, // height of the box
-                      color: Colors.blue, // color of the box
-                    ),
-                    Text('Team A',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    SizedBox(width: 10),
-                    Row(
-                      children: [
-                        Text('0', style: TextStyle(fontSize: 14)),
-                        Icon(Icons.person, size: 16, color: Colors.black),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+            ],
+          );
+        }
+      },
     );
   }
 }
