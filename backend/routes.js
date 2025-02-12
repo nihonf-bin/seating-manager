@@ -36,17 +36,20 @@ router.get('/employeedb/:id', (req, res) => {
 });
 
 // Add a new employee
-router.post('/employees', (req, res) => {
-  const { employeeid, employeename, companyname, teamcolour } = req.body;
-  const query = 'INSERT INTO employeedb (employeeid, employeename, companyname, teamcolour) VALUES (?, ?, ?, ?)';
-  db.query(query, [employeeid, employeename, companyname, teamcolour])
-    .then(([results]) => {
-      res.status(201).send(`Employee added with ID: ${results.insertId}`);
-    })
-    .catch(err => {
-      console.error('Error inserting data:', err.message);
-      res.status(500).send('Error inserting data');
-    });
+// Add a new employee
+router.post('/employees', async (req, res) => {
+  const { employeeid, employeename, companyname, teamcolour, seatid } = req.body;
+  const employeeQuery = 'INSERT INTO employeedb (employeeid, employeename, companyname, teamcolour, seatid) VALUES (?, ?, ?, ?, ?)';
+  const seatQuery = 'UPDATE seatarrangementdb SET employeeid = ?, status = 1, timeoflastupdate = NOW() WHERE seatid = ?';
+
+  try {
+    await db.query(employeeQuery, [employeeid, employeename, companyname, teamcolour, seatid]);
+    await db.query(seatQuery, [employeeid, seatid]);
+    res.status(201).send(`Employee added with ID: ${employeeid} and assigned to seat: ${seatid}`);
+  } catch (err) {
+    console.error('Error inserting data:', err.message);
+    res.status(500).send('Error inserting data');
+  }
 });
 
 // Update an existing employee
