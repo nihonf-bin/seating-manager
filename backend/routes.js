@@ -19,7 +19,7 @@ router.get('/employees', (req, res) => {
 });
 
 // Fetch a specific employee by ID
-router.get('/employeedb/:id', (req, res) => {
+router.get('/employee/:id', (req, res) => {
   const query = 'SELECT * FROM employeedb WHERE employeeid = ?';
   db.query(query, [req.params.id])
     .then(([rows]) => {
