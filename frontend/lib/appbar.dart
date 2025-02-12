@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:online_seating_chart/appstate.dart';
 import 'package:online_seating_chart/styles.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart'; // Import GoRouter
 
 class MyAppbar extends StatefulWidget {
   const MyAppbar({super.key, required this.title});
@@ -99,8 +100,22 @@ class _MyAppbarState extends State<MyAppbar> {
                   )
                 ),
               ],
-          ),
-            SizedBox(width: sw*0.01),
+            ),
+            SizedBox(width: sw * 0.01),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  // Navigate to login page
+                  context.go('/');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 0, 55, 75),
+                  foregroundColor: Styles.white,
+                ),
+                child: Text('Logout'),
+              ),
+            ),
           ],
         )
       ]
