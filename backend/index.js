@@ -1,14 +1,14 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const cors = require('cors');
 const routes = require('./routes');
-const db = require('./db');
 
 const app = express();
 const port = 3000;
 
-app.use(bodyParser.json());
-app.use('/', routes);
+app.use(cors()); // Enable CORS for all routes
+app.use(express.json());
+app.use('/api', routes);
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
+  console.log(`Server running at http://localhost:${port}`);
 });
