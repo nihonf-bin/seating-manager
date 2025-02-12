@@ -36,7 +36,6 @@ router.get('/employees/:id', (req, res) => {
 });
 
 // Add a new employee
-// Add a new employee
 router.post('/employees', async (req, res) => {
   const { employeeid, employeename, companyname, teamcolour, seatid } = req.body;
   const employeeQuery = 'INSERT INTO employeedb (employeeid, employeename, companyname, teamcolour, seatid) VALUES (?, ?, ?, ?, ?)';
@@ -45,7 +44,10 @@ router.post('/employees', async (req, res) => {
   try {
     await db.query(employeeQuery, [employeeid, employeename, companyname, teamcolour, seatid]);
     await db.query(seatQuery, [employeeid, seatid]);
-    res.status(201).send(`Employee added with ID: ${employeeid} and assigned to seat: ${seatid}`);
+    res.status(201).json({
+      message: `Employee added with ID: ${employeeid} and assigned to seat: ${seatid}`,
+      timestamp: new Date().toISOString()
+    });
   } catch (err) {
     console.error('Error inserting data:', err.message);
     res.status(500).send('Error inserting data');
@@ -59,7 +61,10 @@ router.put('/employees/:id', (req, res) => {
   db.query(query, [employeename, companyname, teamcolour, req.params.id])
     .then(([results]) => {
       if (results.affectedRows > 0) {
-        res.send(`Employee updated with ID: ${req.params.id}`);
+        res.json({
+          message: `Employee updated with ID: ${req.params.id}`,
+          timestamp: new Date().toISOString()
+        });
       } else {
         res.status(404).send('Employee not found');
       }
@@ -76,7 +81,10 @@ router.delete('/employees/:id', (req, res) => {
   db.query(query, [req.params.id])
     .then(([results]) => {
       if (results.affectedRows > 0) {
-        res.send(`Employee deleted with ID: ${req.params.id}`);
+        res.json({
+          message: `Employee deleted with ID: ${req.params.id}`,
+          timestamp: new Date().toISOString()
+        });
       } else {
         res.status(404).send('Employee not found');
       }
@@ -140,7 +148,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-
 router.get('/teamCounts', async (req, res) => {
   try {
     const teamQuery = 'SELECT * FROM teams';
@@ -182,6 +189,5 @@ router.get('/filled', async (req, res) => {
     res.status(500).send('Error fetching filled seats');
   }
 });
-
 
 module.exports = router;
