@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:online_seating_chart/appstate.dart';
 import 'package:online_seating_chart/landing.dart';
 import 'package:provider/provider.dart';
+import 'package:online_seating_chart/login.dart';
 
 void main() {
   runApp(
@@ -17,14 +18,16 @@ void main() {
 final GoRouter _router = GoRouter(
   routes: [
     GoRoute(
-      name: 'landing',
+      name: 'login',
       path: '/',
-      builder: (context, state) => const LandingPage(),
-      routes: [
-
-      ],
+      builder: (context, state) => const LoginPage(),
     ),
-  ]
+    GoRoute(
+      name: 'landing',
+      path: '/landing',
+      builder: (context, state) => const LandingPage(),
+    ),
+  ],
 );
 
 class MyApp extends StatelessWidget {

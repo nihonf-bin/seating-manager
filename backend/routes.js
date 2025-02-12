@@ -19,10 +19,14 @@ router.get('/employees', (req, res) => {
 });
 
 // Fetch a specific employee by ID
-router.get('/employees/:id', (req, res) => {
+router.get('/employeedb/:id', (req, res) => {
+  // console.log('Fetching employee with ID:', req.params.id);
   const query = 'SELECT * FROM employeedb WHERE employeeid = ?';
+  // console.log('SQL Query:', query);
+  // console.log('Parameters:', [req.params.id]);
   db.query(query, [req.params.id])
     .then(([rows]) => {
+      // console.log('Rows:', rows); // Print the rows fetched from the database
       if (rows.length > 0) {
         res.json(rows[0]);
       } else {
@@ -120,18 +124,18 @@ router.get('/schedule/:id', (req, res) => {
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
-  console.log('Login attempt with username:', username);
-  console.log('Login attempt with password:', password);
+  // console.log('Login attempt with username:', username);
+  // console.log('Login attempt with password:', password);
 
   try {
     const [result] = await db.query(
       'SELECT * FROM logincredentials WHERE username = ? AND password = ?',
       [username, password]
     );
-    console.log(username);
-    console.log(password);
+    // console.log(username);
+    // console.log(password);
 
-    console.log(result);
+    // console.log(result);
 
     if (result.length > 0) {
       res.json({ success: true });

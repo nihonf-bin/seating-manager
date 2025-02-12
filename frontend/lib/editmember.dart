@@ -18,6 +18,17 @@ class _EditMemberState extends State<EditMember> {
   Widget build(BuildContext context) {
     // double screenWidth = MediaQuery.of(context).size.width;
 
+    Color? teamColor;
+    if (widget.seatData?['teamcolour'] != null) {
+      try {
+        teamColor = Color(int.parse(widget.seatData!['teamcolour']));
+      } catch (e) {
+        teamColor = Colors.transparent;
+      }
+    } else {
+      teamColor = Colors.transparent;
+    }
+
     return Container(
       margin: EdgeInsets.all(20.0),
       height: 450,
@@ -38,14 +49,14 @@ class _EditMemberState extends State<EditMember> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Name: ', style: TextStyle(fontSize: 20)),
-                Text('${widget.seatData?['memberName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('${widget.seatData?['employeename']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Company Name: ', style: TextStyle(fontSize: 20)),
-                Text('${widget.seatData?['memberCompanyName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('${widget.seatData?['companyname']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ],
                 
             ),
@@ -59,9 +70,9 @@ class _EditMemberState extends State<EditMember> {
                   Container(
                     height: 18,
                     width: 18,
-                    color: widget.seatData?['seatColor'],
+                    color: teamColor,
                   ),
-                  Text('${widget.seatData?['memberTeamName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('${widget.seatData?['teamcolour']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ],
               ),
               ],  
