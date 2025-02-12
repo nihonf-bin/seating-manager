@@ -36,7 +36,6 @@ router.get('/employees/:id', (req, res) => {
 });
 
 // Add a new employee
-// Add a new employee
 router.post('/employees', async (req, res) => {
   const { employeeid, employeename, companyname, teamcolour, seatid } = req.body;
   const employeeQuery = 'INSERT INTO employeedb (employeeid, employeename, companyname, teamcolour, seatid) VALUES (?, ?, ?, ?, ?)';
@@ -45,7 +44,10 @@ router.post('/employees', async (req, res) => {
   try {
     await db.query(employeeQuery, [employeeid, employeename, companyname, teamcolour, seatid]);
     await db.query(seatQuery, [employeeid, seatid]);
-    res.status(201).send(`Employee added with ID: ${employeeid} and assigned to seat: ${seatid}`);
+    res.status(201).json({
+      message: `Employee added with ID: ${employeeid} and assigned to seat: ${seatid}`,
+      timestamp: new Date().toISOString()
+    });
   } catch (err) {
     console.error('Error inserting data:', err.message);
     res.status(500).send('Error inserting data');
@@ -59,7 +61,10 @@ router.put('/employees/:id', (req, res) => {
   db.query(query, [employeename, companyname, teamcolour, req.params.id])
     .then(([results]) => {
       if (results.affectedRows > 0) {
-        res.send(`Employee updated with ID: ${req.params.id}`);
+        res.json({
+          message: `Employee updated with ID: ${req.params.id}`,
+          timestamp: new Date().toISOString()
+        });
       } else {
         res.status(404).send('Employee not found');
       }
@@ -71,20 +76,35 @@ router.put('/employees/:id', (req, res) => {
 });
 
 // Delete an employee
-router.delete('/employees/:id', (req, res) => {
-  const query = 'DELETE FROM employeedb WHERE employeeid = ?';
-  db.query(query, [req.params.id])
-    .then(([results]) => {
-      if (results.affectedRows > 0) {
-        res.send(`Employee deleted with ID: ${req.params.id}`);
+router.delete('/employees/:id', async (req, res) => {
+  const employeeId = req.params.id;
+  const updateSeatQuery = 'UPDATE seatarrangementdb SET employeeid = NULL, status = 0, timeoflastupdate = NOW() WHERE employeeid = ?';
+  const deleteEmployeeQuery = 'DELETE FROM employeedb WHERE employeeid = ?';
+
+  try {
+    // Update the seat arrangement
+    const [updateResults] = await db.query(updateSeatQuery, [employeeId]);
+
+    // Check if any seat was updated
+    if (updateResults.affectedRows > 0) {
+      // Delete the employee
+      const [deleteResults] = await db.query(deleteEmployeeQuery, [employeeId]);
+
+      if (deleteResults.affectedRows > 0) {
+        res.json({
+          message: `Employee deleted with ID: ${employeeId}`,
+          timestamp: new Date().toISOString()
+        });
       } else {
         res.status(404).send('Employee not found');
       }
-    })
-    .catch(err => {
-      console.error('Error deleting data:', err.message);
-      res.status(500).send('Error deleting data');
-    });
+    } else {
+      res.status(404).send('No seat found for the given employee ID');
+    }
+  } catch (err) {
+    console.error('Error deleting data:', err.message);
+    res.status(500).send('Error deleting data');
+  }
 });
 
 // Fetch all schedules
@@ -140,7 +160,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-
 router.get('/teamCounts', async (req, res) => {
   try {
     const teamQuery = 'SELECT * FROM teams';
@@ -182,6 +201,5 @@ router.get('/filled', async (req, res) => {
     res.status(500).send('Error fetching filled seats');
   }
 });
-
 
 module.exports = router;
