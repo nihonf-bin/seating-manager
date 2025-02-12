@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:online_seating_chart/appstate.dart';
 import 'package:online_seating_chart/landing.dart';
-import 'package:provider/provider.dart';
 import 'package:online_seating_chart/login.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(
