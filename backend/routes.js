@@ -19,7 +19,7 @@ router.get('/employees', (req, res) => {
 });
 
 // Fetch a specific employee by ID
-router.get('/employee/:id', (req, res) => {
+router.get('/employees/:id', (req, res) => {
   const query = 'SELECT * FROM employeedb WHERE employeeid = ?';
   db.query(query, [req.params.id])
     .then(([rows]) => {
@@ -164,5 +164,24 @@ router.get('/teamCounts', async (req, res) => {
     res.status(500).send('Error fetching team counts');
   }
 });
+
+router.get('/filled', async (req, res) => {
+  const query = `
+    SELECT s.seatid, e.employeeid, e.employeename, e.companyname, e.teamcolour, t.teamname
+    FROM seatarrangementdb s
+    JOIN employeedb e ON s.employeeid = e.employeeid
+    JOIN teams t ON e.teamcolour = t.teamcolour
+    WHERE s.status = 1
+  `;
+
+  try {
+    const [rows] = await db.query(query);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching filled seats:', err.message);
+    res.status(500).send('Error fetching filled seats');
+  }
+});
+
 
 module.exports = router;
