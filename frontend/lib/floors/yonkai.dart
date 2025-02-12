@@ -17,6 +17,7 @@ class _YonkaiState extends State<Yonkai> {
   final TextEditingController searchController = TextEditingController();
   bool vacantToggle = false;
   bool occupiedToggle = false;
+  bool isSearchResultVisible = false;
   Map<String, dynamic> selectedMemberData = {};
 
   Map<String, dynamic> onSeatClicked(Map<String, dynamic> memberData) {
@@ -40,6 +41,7 @@ class _YonkaiState extends State<Yonkai> {
         selectedMemberData = jsonDecode(response.body);
         occupiedToggle = true;
         vacantToggle = false;
+        isSearchResultVisible = true;
       });
     } else {
       // Handle error
@@ -77,6 +79,17 @@ class _YonkaiState extends State<Yonkai> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            if (isSearchResultVisible)
+              IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() {
+                    isSearchResultVisible = false;
+                    occupiedToggle = false;
+                    vacantToggle = false;
+                  });
+                },
+              ),
             Expanded(child: Seatmap(floor: 4, selectedMemberData: onSeatClicked)),
             Visibility(
               visible: vacantToggle,
@@ -131,29 +144,31 @@ class _YonkaiState extends State<Yonkai> {
                       SizedBox(height: 20),
                       Text("Last updated 4:59 PM, 2/5/2025", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       SizedBox(height: 30),
-                      Text('Search member',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 10),
-                      TextField(
-                        controller: searchController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: 'Enter employee ID',
-                          hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                      if (!isSearchResultVisible) ...[
+                        Text('Search member',
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: searchController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Enter employee ID',
+                            hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 18),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            String memberId = searchController.text;
-                            fetchMemberData(memberId);
-                          },
-                          style: Styles.buttonStyle(context),
-                          child: Text('Search'),
+                        SizedBox(height: 18),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              String memberId = searchController.text;
+                              fetchMemberData(memberId);
+                            },
+                            style: Styles.buttonStyle(context),
+                            child: Text('Search'),
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
