@@ -188,7 +188,7 @@ router.get('/teamCounts', async (req, res) => {
 
 // Fetch all occupied seats
 router.get('/filled', async (req, res) => {
-  const query = `
+  const filledSeatsQuery = `
     SELECT s.seatid, e.employeeid, e.employeename, e.companyname, e.teamcolour, t.teamname, s.timeoflastupdate
     FROM seatarrangementdb s
     JOIN employeedb e ON s.employeeid = e.employeeid
@@ -196,22 +196,24 @@ router.get('/filled', async (req, res) => {
     WHERE s.status = 1
   `;
 
+  const latestUpdateQuery = `
+    SELECT MAX(timeoflastupdate) as latestUpdate
+    FROM seatarrangementdb
+  `;
+
   try {
-    const [rows] = await db.query(query);
-    const latestUpdate = rows.reduce((latest, row) => {
-      return row.timeoflastupdate > latest ? row.timeoflastupdate : latest;
-    }, rows[0]?.timeoflastupdate || null);
+    const [filledSeats] = await db.query(filledSeatsQuery);
+    const [latestupdateResult] = await db.query(latestUpdateQuery);
+    const latestupdate = latestupdateResult[0]?.latestUpdate || null;
 
     res.json({
-      rows,
-      latestUpdate
+      rows: filledSeats,
+      latestupdate
     });
   } catch (err) {
     console.error('Error fetching filled seats:', err.message);
     res.status(500).send('Error fetching filled seats');
   }
 });
-
-module.exports = router;
 
 module.exports = router;
