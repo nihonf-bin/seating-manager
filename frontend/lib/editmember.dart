@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:online_seating_chart/appstate.dart';
 import 'package:online_seating_chart/styles.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +36,7 @@ class _EditMemberState extends State<EditMember> {
 
   @override
   Widget build(BuildContext context) {
-    // double screenWidth = MediaQuery.of(context).size.width;
+    DateTime lastUpdated = DateTime.parse(widget.seatData?['timestamp']).toLocal();
 
     return Container(
       margin: EdgeInsets.all(20.0),
@@ -63,7 +64,7 @@ class _EditMemberState extends State<EditMember> {
                       children: [
                         Text('Seat Number: ', style: TextStyle(fontSize: 20)),
                         Text('${widget.seatData?['seatNumber']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        ],
+                      ],
                     ),
                     Visibility(
                       visible: !isEditPage,
@@ -81,26 +82,40 @@ class _EditMemberState extends State<EditMember> {
                             children: [
                               Text('Company: ', style: TextStyle(fontSize: 20)),
                               Text('${widget.seatData?['memberCompanyName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                              ],
-                              
+                            ],
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('Team: ', style: TextStyle(fontSize: 20)),
                               Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Container(
-                                  height: 18,
-                                  width: 18,
-                                  color: widget.seatData?['seatColor'],
-                                ),
-                                Text('${widget.seatData?['memberTeamName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            ],  
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Container(
+                                    height: 18,
+                                    width: 18,
+                                    color: widget.seatData?['seatColor'],
+                                  ),
+                                  Text('${widget.seatData?['memberTeamName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ],
                           ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Time of Last Update: ', style: TextStyle(fontSize: 20)),
+                              
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                DateFormat('yyyy-MM-dd HH:mm:ss').format(lastUpdated),
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              )
+                            ],)
                         ],
                       ),
                     ),
@@ -121,7 +136,7 @@ class _EditMemberState extends State<EditMember> {
                             hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                             contentPadding: const EdgeInsets.symmetric(
                               vertical: 10,
-                              horizontal: 15
+                              horizontal: 15,
                             ),
                           ),
                         ),
@@ -134,7 +149,7 @@ class _EditMemberState extends State<EditMember> {
                             hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                             contentPadding: const EdgeInsets.symmetric(
                               vertical: 10,
-                              horizontal: 15
+                              horizontal: 15,
                             ),
                           ),
                         ),
@@ -147,14 +162,14 @@ class _EditMemberState extends State<EditMember> {
                             hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                             contentPadding: const EdgeInsets.symmetric(
                               vertical: 10,
-                              horizontal: 15
+                              horizontal: 15,
                             ),
                           ),
                         ),
                       ],
                     ),
-                  )
-                )
+                  ),
+                ),
               ],
             ),
             Column(
@@ -198,8 +213,8 @@ class _EditMemberState extends State<EditMember> {
                       }
                     },
                     style: Styles.buttonStyle(context),
-                    child: isEditing ? Styles.progressIndicator : Text(isEditPage ? 'Update' : 'Edit Member')
-                  )
+                    child: isEditing ? Styles.progressIndicator : Text(isEditPage ? 'Update' : 'Edit Member'),
+                  ),
                 ),
                 SizedBox(height: 10),
                 SizedBox(
@@ -228,13 +243,13 @@ class _EditMemberState extends State<EditMember> {
                         _companyNameController.clear();
                         _teamColorController.clear();
                       }
-                    }, 
+                    },
                     style: Styles.buttonStyle(context),
-                    child: isRemoving ? Styles.progressIndicator : Text('Remove Member')
-                  )
+                    child: isRemoving ? Styles.progressIndicator : Text('Remove Member'),
+                  ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
