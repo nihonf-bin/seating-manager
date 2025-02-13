@@ -216,4 +216,22 @@ router.get('/filled', async (req, res) => {
   }
 });
 
+// Fetch all teams
+
+router.post('/teams', async (req, res) => {
+  const { teamcolour, teamname } = req.body;
+  const query = 'INSERT INTO teams (teamcolour, teamname) VALUES (?, ?)';
+
+  try {
+    await db.query(query, [teamcolour, teamname]);
+    res.status(201).json({
+      message: `Team added with color: ${teamcolour} and name: ${teamname}`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Error inserting data:', err.message);
+    res.status(500).send('Error inserting data');
+  }
+});
+
 module.exports = router;
