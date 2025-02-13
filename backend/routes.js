@@ -188,20 +188,49 @@ router.get('/teamCounts', async (req, res) => {
 
 // Fetch all occupied seats
 router.get('/filled', async (req, res) => {
-  const query = `
-    SELECT s.seatid, e.employeeid, e.employeename, e.companyname, e.teamcolour, t.teamname
+  const filledSeatsQuery = `
+    SELECT s.seatid, e.employeeid, e.employeename, e.companyname, e.teamcolour, t.teamname, s.timeoflastupdate
     FROM seatarrangementdb s
     JOIN employeedb e ON s.employeeid = e.employeeid
     JOIN teams t ON e.teamcolour = t.teamcolour
     WHERE s.status = 1
   `;
 
+  const latestUpdateQuery = `
+    SELECT MAX(timeoflastupdate) as latestUpdate
+    FROM seatarrangementdb
+  `;
+
   try {
-    const [rows] = await db.query(query);
-    res.json(rows);
+    const [filledSeats] = await db.query(filledSeatsQuery);
+    const [latestupdateResult] = await db.query(latestUpdateQuery);
+    const latestupdate = latestupdateResult[0]?.latestUpdate || null;
+
+    res.json({
+      rows: filledSeats,
+      latestupdate
+    });
   } catch (err) {
     console.error('Error fetching filled seats:', err.message);
     res.status(500).send('Error fetching filled seats');
+  }
+});
+
+// Fetch all teams
+
+router.post('/teams', async (req, res) => {
+  const { teamcolour, teamname } = req.body;
+  const query = 'INSERT INTO teams (teamcolour, teamname) VALUES (?, ?)';
+
+  try {
+    await db.query(query, [teamcolour, teamname]);
+    res.status(201).json({
+      message: `Team added with color: ${teamcolour} and name: ${teamname}`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Error inserting data:', err.message);
+    res.status(500).send('Error inserting data');
   }
 });
 
