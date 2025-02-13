@@ -20,6 +20,7 @@ class _EditMemberState extends State<EditMember> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _companyNameController = TextEditingController();
   final TextEditingController _teamColorController = TextEditingController();
+  String selectedColor = '';
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -27,7 +28,6 @@ class _EditMemberState extends State<EditMember> {
     super.initState();
     _nameController.text = widget.seatData?['memberName'];
     _companyNameController.text = widget.seatData?['memberCompanyName'];
-    _teamColorController.text = widget.seatData!['seatColor'].toString();
   }
 
   bool isEditPage = false;
@@ -36,7 +36,16 @@ class _EditMemberState extends State<EditMember> {
 
   @override
   Widget build(BuildContext context) {
+    // double screenWidth = MediaQuery.of(context).size.width;
     DateTime lastUpdated = DateTime.parse(widget.seatData?['timestamp']).toLocal();
+    final List<String> colorLabels = [
+      '0000FF',
+      '00FF00',
+      '666600',
+      'FF6600',
+      '800080',
+      'FF0000',
+    ];
 
     return Container(
       margin: EdgeInsets.all(20.0),
@@ -64,7 +73,7 @@ class _EditMemberState extends State<EditMember> {
                       children: [
                         Text('Seat Number: ', style: TextStyle(fontSize: 20)),
                         Text('${widget.seatData?['seatNumber']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                      ],
+                        ],
                     ),
                     Visibility(
                       visible: !isEditPage,
@@ -82,40 +91,35 @@ class _EditMemberState extends State<EditMember> {
                             children: [
                               Text('Company: ', style: TextStyle(fontSize: 20)),
                               Text('${widget.seatData?['memberCompanyName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                            ],
+                              ],
+                              
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('Team: ', style: TextStyle(fontSize: 20)),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Container(
-                                    height: 18,
-                                    width: 18,
-                                    color: widget.seatData?['seatColor'],
-                                  ),
-                                  Text('${widget.seatData?['memberTeamName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                            ],
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Container(
+                                  height: 18,
+                                  width: 18,
+                                  color: widget.seatData?['seatColor'],
+                                ),
+                                Text('${widget.seatData?['memberTeamName']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            ],  
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Time of Last Update: ', style: TextStyle(fontSize: 20)),
-                              
+                              Text('Last Updated: ', style: TextStyle(fontSize: 20)),
+                              Text(DateFormat('yyyy-MM-dd  HH:mm').format(lastUpdated),
+                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                )
                             ],
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                DateFormat('yyyy-MM-dd HH:mm:ss').format(lastUpdated),
-                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                              )
-                            ],)
                         ],
                       ),
                     ),
@@ -136,7 +140,7 @@ class _EditMemberState extends State<EditMember> {
                             hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                             contentPadding: const EdgeInsets.symmetric(
                               vertical: 10,
-                              horizontal: 15,
+                              horizontal: 15
                             ),
                           ),
                         ),
@@ -149,27 +153,35 @@ class _EditMemberState extends State<EditMember> {
                             hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                             contentPadding: const EdgeInsets.symmetric(
                               vertical: 10,
-                              horizontal: 15,
+                              horizontal: 15
                             ),
                           ),
                         ),
                         SizedBox(height: 10),
-                        TextField(
-                          controller: _teamColorController,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: 'Enter team color',
-                            hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 15,
-                            ),
-                          ),
+                        Row( // Or use a Row/Column if you don't need wrapping
+                          spacing: 8.0, // Space between buttons
+                          children: List.generate(colorLabels.length, (index) {
+                            return IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  selectedColor = colorLabels[index];
+                                });
+                              }, 
+                              style: IconButton.styleFrom(
+                                backgroundColor: selectedColor == colorLabels[index] ? const Color.fromARGB(255, 199, 237, 255) : null,
+                              ),
+                              icon: Container(
+                                width: 30.0, // width of the box
+                                height: 30.0, // height of the box
+                                color: Color(int.parse("0xFF${colorLabels[index]}")),// color of the box
+                              ),
+                            );
+                          }),
                         ),
                       ],
                     ),
-                  ),
-                ),
+                  )
+                )
               ],
             ),
             Column(
@@ -188,7 +200,8 @@ class _EditMemberState extends State<EditMember> {
                               employeeID: widget.seatData!['employeeID'].toString(),
                               employeeName: _nameController.text,
                               companyName: _companyNameController.text,
-                              teamColour: _teamColorController.text,
+                              teamColour: selectedColor, 
+                              seatNumber: widget.seatData?['seatNumber'],
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text(result)),
@@ -203,7 +216,7 @@ class _EditMemberState extends State<EditMember> {
                             });
                             _nameController.clear();
                             _companyNameController.clear();
-                            _teamColorController.clear();
+                            selectedColor = '';
                           }
                         }
                       } else {
@@ -213,43 +226,46 @@ class _EditMemberState extends State<EditMember> {
                       }
                     },
                     style: Styles.buttonStyle(context),
-                    child: isEditing ? Styles.progressIndicator : Text(isEditPage ? 'Update' : 'Edit Member'),
-                  ),
+                    child: isEditing ? Styles.progressIndicator : Text(isEditPage ? 'Update' : 'Edit Member')
+                  )
                 ),
                 SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      try {
-                        setState(() {
-                          isRemoving = true;
-                        });
-                        final result = await Provider.of<ApplicationState>(context, listen: false).deleteEmployee(
-                          employeeID: widget.seatData!['employeeID'].toString(),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(result)),
-                        );
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: ${e.toString()}')),
-                        );
-                      } finally {
-                        setState(() {
-                          isRemoving = false;
-                        });
-                        _nameController.clear();
-                        _companyNameController.clear();
-                        _teamColorController.clear();
-                      }
-                    },
-                    style: Styles.buttonStyle(context),
-                    child: isRemoving ? Styles.progressIndicator : Text('Remove Member'),
+                Visibility(
+                  visible: isEditPage,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          setState(() {
+                            isRemoving = true;
+                          });
+                          final result = await Provider.of<ApplicationState>(context, listen: false).deleteEmployee(
+                            employeeID: widget.seatData!['employeeID'].toString(),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(result)),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: ${e.toString()}')),
+                          );
+                        } finally {
+                          setState(() {
+                            isRemoving = false;
+                          });
+                          _nameController.clear();
+                          _companyNameController.clear();
+                          _teamColorController.clear();
+                        }
+                      }, 
+                      style: Styles.buttonStyle(context).copyWith(backgroundColor: WidgetStateProperty.all(Colors.redAccent)),
+                      child: isRemoving ? Styles.progressIndicator : Text('Remove Member')
+                    )
                   ),
                 ),
               ],
-            ),
+            )
           ],
         ),
       ),

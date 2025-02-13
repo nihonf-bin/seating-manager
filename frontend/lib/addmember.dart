@@ -19,14 +19,22 @@ class _AddMemberState extends State<AddMember> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _employeeIDController = TextEditingController();
   final TextEditingController _companyNameController = TextEditingController();
-  final TextEditingController _teamColorController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String selectedColor = '';
 
   bool isAdding = false;
 
   @override
   Widget build(BuildContext context) {
     // double screenWidth = MediaQuery.of(context).size.width;
+    final List<String> colorLabels = [
+      '0000FF',
+      '00FF00',
+      '666600',
+      'FF6600',
+      '800080',
+      'FF0000',
+    ];
 
     return Container(
       margin: EdgeInsets.all(20.0),
@@ -97,17 +105,25 @@ class _AddMemberState extends State<AddMember> {
                       ),
                     ),
                     SizedBox(height: 10),
-                    TextField(
-                      controller: _teamColorController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Enter team color',
-                        hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 15
-                        ),
-                      ),
+                    Row( // Or use a Row/Column if you don't need wrapping
+                      spacing: 8.0, // Space between buttons
+                      children: List.generate(colorLabels.length, (index) {
+                        return IconButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedColor = colorLabels[index];
+                            });
+                          }, 
+                          style: IconButton.styleFrom(
+                            backgroundColor: selectedColor == colorLabels[index] ? const Color.fromARGB(255, 199, 237, 255) : null,
+                          ),
+                          icon: Container(
+                            width: 30.0, // width of the box
+                            height: 30.0, // height of the box
+                            color: Color(int.parse("0xFF${colorLabels[index]}")),// color of the box
+                          ),
+                        );
+                      }),
                     ),
                     // Row(
                     //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -136,7 +152,7 @@ class _AddMemberState extends State<AddMember> {
                           String memberName = _nameController.text;
                           String employeeID = _employeeIDController.text;
                           String companyName = _companyNameController.text;
-                          String teamColor = _teamColorController.text;
+                          String teamColor = selectedColor;
 
                           if (_formKey.currentState!.validate()) {
                             try {
@@ -164,7 +180,7 @@ class _AddMemberState extends State<AddMember> {
                               _nameController.clear();
                               _employeeIDController.clear();
                               _companyNameController.clear();
-                              _teamColorController.clear();
+                              selectedColor = '';
                             }
                           }
                         }, 

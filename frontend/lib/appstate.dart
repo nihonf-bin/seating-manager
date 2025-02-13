@@ -3,26 +3,41 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ApplicationState extends ChangeNotifier {
+  DateTime? _lastUpdated;
+  DateTime get lastUpdated => _lastUpdated ?? DateTime.now();
+
   ApplicationState() {
     syncData();
   }
 
   final Map<String, Map<String, dynamic>> _seatData = {};
-  DateTime _lastUpdated = DateTime.now();
 
-  DateTime get lastUpdated => _lastUpdated;
+  void updateTimestamp(Map<String, dynamic> response) {
+    try {
+      String? timestamp = response['latestupdate'];
+      if (timestamp != null) {
+        _lastUpdated = DateTime.parse(timestamp).toLocal();
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error updating timestamp: $e');
+    }
+  }
 
   Future<void> syncData() async {
     try {
       final response = await http.get(
-        Uri.parse('http://172.21.68.22:3000/api/filled'),
+        Uri.parse('http://172.21.66.22:3000/api/filled'),
         headers: {
           'Content-Type': 'application/json',
         },
       );
 
       Map<String, dynamic> seatMapDataMap = json.decode(response.body);
+
       List<dynamic> seatMapData = seatMapDataMap["rows"];
+
+      updateTimestamp(seatMapDataMap);
 
       for (final seatData in seatMapData) {
         initializeSeat(seatData["seatid"]);
@@ -38,14 +53,10 @@ class ApplicationState extends ChangeNotifier {
           "timestamp": seatData["timeoflastupdate"],
         });
       }
-
-      _lastUpdated = DateTime.now();
-
     } catch (e) {
       print('Error connecting to server: $e');
       rethrow;
     } finally {
-      print(_seatData);
       notifyListeners();
     }
   }
@@ -58,7 +69,6 @@ class ApplicationState extends ChangeNotifier {
     'memberName': '',
     'memberCompanyName': '',
     'memberTeamName': '',
-    "timestamp": DateTime.now().toIso8601String(),
   };
 
   int _currentIndex = 0;
@@ -110,7 +120,7 @@ class ApplicationState extends ChangeNotifier {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('http://172.21.68.22:3000/api/employees'),
+        Uri.parse('http://172.21.66.22:3000/api/employees'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -132,6 +142,8 @@ class ApplicationState extends ChangeNotifier {
     } catch (e) {
       print('Error connecting to server: $e');
       rethrow;
+    } finally {
+      await syncData();
     }
   }
 
@@ -140,10 +152,11 @@ class ApplicationState extends ChangeNotifier {
     required String employeeName,
     required String companyName,
     required String teamColour,
+    required String seatNumber,
   }) async {
     try {
       final response = await http.put(
-        Uri.parse('http://172.21.68.22:3000/api/employees/$employeeID'),
+        Uri.parse('http://172.21.66.22:3000/api/employees/$employeeID'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -151,6 +164,7 @@ class ApplicationState extends ChangeNotifier {
           'employeename': employeeName,
           'companyname': companyName,
           'teamcolour': teamColour,
+          'seatid': seatNumber,
         }),
       );
 
@@ -163,6 +177,8 @@ class ApplicationState extends ChangeNotifier {
     } catch (e) {
       print('Error connecting to server: $e');
       rethrow;
+    } finally {
+      await syncData();
     }
   }
 
@@ -171,7 +187,7 @@ class ApplicationState extends ChangeNotifier {
   }) async {
     try {
       final response = await http.delete(
-        Uri.parse('http://172.21.68.22:3000/api/employees/$employeeID'),
+        Uri.parse('http://172.21.66.22:3000/api/employees/$employeeID'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -180,12 +196,15 @@ class ApplicationState extends ChangeNotifier {
       if (response.statusCode == 200) {
         return 'Employee deleted successfully';
       } else {
-        print('Failed to delete employee: ${response.body}');
-        throw Exception('Failed to delete employee: ${response.body}');
+        print('Failed to deleted employee: ${response.body}');
+        throw Exception('Failed to deleted employee: ${response.body}');
       }
     } catch (e) {
       print('Error connecting to server: $e');
       rethrow;
+    } finally {
+      await syncData();
     }
   }
+
 }

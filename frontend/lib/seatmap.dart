@@ -133,7 +133,6 @@ class Seat extends StatefulWidget {
   final int numeric;
   final bool isWindow;
   final Map<String, dynamic> Function(Map<String, dynamic> memberData) selectedMemberData;
-  
 
   @override
   State<Seat> createState() => _SeatState();
@@ -141,6 +140,7 @@ class Seat extends StatefulWidget {
 
 class _SeatState extends State<Seat> {
   late String seatNumber;
+  double seatSide = 40;
 
   @override
   void initState() {
@@ -148,62 +148,174 @@ class _SeatState extends State<Seat> {
     seatNumber = "${widget.floor}F${widget.cardinals}${widget.alpha}${widget.numeric}";
   }
 
+  Future<void> _showConfirmationDialog(BuildContext context, Map<String, dynamic> draggedSeatData, ApplicationState appState) async {
+    try {
+      final bool? confirmed = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Confirm Seat Change'),
+            content: Text('Do you want to move ${draggedSeatData["memberName"]} to seat $seatNumber?'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+              ),
+              TextButton(
+                child: Text('Confirm'),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmed == true) {
+        try {
+          // Convert Color to hex string (removing alpha channel and # symbol)
+          final color = draggedSeatData["seatColor"] as Color;
+          final String colorHex = color.value.toRadixString(16).substring(2); // Remove alpha channel
+          
+          // await appState.editEmployee(
+          //   employeeID: draggedSeatData["employeeID"].toString(),
+          //   employeeName: draggedSeatData["memberName"] ?? '',
+          //   companyName: draggedSeatData["memberCompanyName"] ?? '',
+          //   teamColour: colorHex.toUpperCase(),  // Send hex color string
+          //   seatNumber: seatNumber
+          // );
+          print('success');
+        } catch (e) {
+          print('error $e');
+          if (context.mounted) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Error'),
+                  content: Text('Failed to update seat assignment. Please try again.'),
+                  actions: [
+                    TextButton(
+                      child: Text('OK'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        }
+      }
+    } catch (e) {
+      print('Error in _showConfirmationDialog: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-   return Consumer<ApplicationState>(
+    return Consumer<ApplicationState>(
       builder: (context, appState, child) {
         final currentSeatData = appState.getSeat(seatNumber);
-        final currentColor = currentSeatData['seatColor'] ?? Colors.grey;
+        Color currentColor = currentSeatData['seatColor'] ?? Colors.grey;
+        bool isOccupied = currentSeatData["isOccupied"] == true;
 
-        return TextButton(
-          onPressed: () {
-            String? previousSeatNumber = appState.previousSeatNumber;
-      
-            if (previousSeatNumber != null && previousSeatNumber != seatNumber && currentSeatData["isOccupied"] == false) {
-              appState.updateSeat(previousSeatNumber, {
-                'seatColor': Colors.grey
-              });
-            }
-      
-            if (currentSeatData["isOccupied"] == false) {
-              appState.updateSeat(seatNumber, {
-                'seatColor': currentColor == Colors.grey ? Styles.primaryLightColor : currentColor == Styles.primaryLightColor ? Colors.grey : currentColor,
-              });
-            }
-      
-            appState.setPreviousSeatIndex(seatNumber);
-      
+        return DragTarget<Map<String, dynamic>>(
+          onWillAcceptWithDetails: (data) {
+            // Only accept if the target seat is vacant
+            return currentSeatData["isOccupied"] == false;
+          },
+          onAcceptWithDetails: (details) {
+            // Show confirmation dialog when dropped on a valid target
+            _showConfirmationDialog(context, details.data, appState);
             widget.selectedMemberData(currentSeatData);
-          }, 
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.all(2.0),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            side: BorderSide.none,
-            elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero), 
-            backgroundColor: Colors.transparent,
-            splashFactory: NoSplash.splashFactory, 
-          ),
-          child: Column(
-            children: [
-              Container(
+          },
+          builder: (context, candidateData, rejectedData) {
+            // Only make the seat draggable if it's occupied
+            if (!isOccupied) {
+              return _buildSeatWidget(currentSeatData, currentColor);
+            }
+
+            return Draggable<Map<String, dynamic>>(
+              data: {
+                ...currentSeatData,
+                "seatNumber": seatNumber,
+              },
+              feedback: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: widget.isWindow ? 60 : 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black),
+                    color: currentColor.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Center(
+                    child: Text(
+                      currentSeatData["memberName"], 
+                      style: TextStyle(fontSize: 10, color: Colors.white)
+                    ),
+                  ),
+                ),
+              ),
+              childWhenDragging: Container(
                 width: widget.isWindow ? 60 : 38,
                 height: 38,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black),
-                  color: currentColor,
-                  borderRadius: BorderRadius.circular(6), 
+                  color: Colors.grey.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(currentSeatData["memberName"], style: TextStyle(fontSize: 10, color: Colors.white)),
               ),
-              // Text(currentSeatData["memberName"], style: TextStyle(fontSize: 10)),
-            ],
-          )
+              child: _buildSeatWidget(currentSeatData, currentColor),
+            );
+          },
         );
-      }
-     
-   );
+      },
+    );
+  }
+
+  Widget _buildSeatWidget(Map<String, dynamic> seatData, Color color) {
+    return TextButton(
+      onPressed: () {
+        widget.selectedMemberData(seatData);
+        setState(() {
+          seatSide = 40;
+        });
+      },
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.all(2.0),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        side: BorderSide.none,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        backgroundColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: widget.isWindow ? 60 : seatSide,
+            height: seatSide,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              color: color,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Center(
+              child: Text(
+                seatData["memberName"], 
+                style: TextStyle(fontSize: 10, color: Colors.white)
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
-
