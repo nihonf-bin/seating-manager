@@ -8,27 +8,21 @@ class ApplicationState extends ChangeNotifier {
   }
 
   final Map<String, Map<String, dynamic>> _seatData = {};
+  DateTime _lastUpdated = DateTime.now();
 
-  DateTime lastUpdated = DateTime.now();
-
-  void updateTimestamp(String response) {
-    Map<String, dynamic> jsonData = json.decode(response);
-    String timestamp = jsonData['timestamp'];
-    DateTime localDateTime = DateTime.parse(timestamp).toLocal();
-    lastUpdated = localDateTime;
-    notifyListeners();
-  }
+  DateTime get lastUpdated => _lastUpdated;
 
   Future<void> syncData() async {
     try {
       final response = await http.get(
-        Uri.parse('http://172.21.66.22:3000/api/filled'),
+        Uri.parse('http://172.21.68.22:3000/api/filled'),
         headers: {
           'Content-Type': 'application/json',
         },
       );
 
-      List<dynamic> seatMapData = json.decode(response.body);
+      Map<String, dynamic> seatMapDataMap = json.decode(response.body);
+      List<dynamic> seatMapData = seatMapDataMap["rows"];
 
       for (final seatData in seatMapData) {
         initializeSeat(seatData["seatid"]);
@@ -41,8 +35,11 @@ class ApplicationState extends ChangeNotifier {
           'memberName': seatData["employeename"],
           'memberCompanyName': seatData["companyname"],
           'memberTeamName': seatData["teamname"],
+          "timestamp": seatData["timeoflastupdate"],
         });
       }
+
+      _lastUpdated = DateTime.now();
 
     } catch (e) {
       print('Error connecting to server: $e');
@@ -61,6 +58,7 @@ class ApplicationState extends ChangeNotifier {
     'memberName': '',
     'memberCompanyName': '',
     'memberTeamName': '',
+    "timestamp": DateTime.now().toIso8601String(),
   };
 
   int _currentIndex = 0;
@@ -112,7 +110,7 @@ class ApplicationState extends ChangeNotifier {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('http://172.21.66.22:3000/api/employees'),
+        Uri.parse('http://172.21.68.22:3000/api/employees'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -126,7 +124,6 @@ class ApplicationState extends ChangeNotifier {
       );
 
       if (response.statusCode == 201) {
-        updateTimestamp(response.body);
         return 'Employee added successfully';
       } else {
         print('Failed to add employee: ${response.body}');
@@ -146,7 +143,7 @@ class ApplicationState extends ChangeNotifier {
   }) async {
     try {
       final response = await http.put(
-        Uri.parse('http://172.21.66.22:3000/api/employees/$employeeID'),
+        Uri.parse('http://172.21.68.22:3000/api/employees/$employeeID'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -158,7 +155,6 @@ class ApplicationState extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        updateTimestamp(response.body);
         return 'Employee edited successfully';
       } else {
         print('Failed to edit employee: ${response.body}');
@@ -175,23 +171,21 @@ class ApplicationState extends ChangeNotifier {
   }) async {
     try {
       final response = await http.delete(
-        Uri.parse('http://172.21.66.22:3000/api/employees/$employeeID'),
+        Uri.parse('http://172.21.68.22:3000/api/employees/$employeeID'),
         headers: {
           'Content-Type': 'application/json',
         },
       );
 
       if (response.statusCode == 200) {
-        updateTimestamp(response.body);
         return 'Employee deleted successfully';
       } else {
-        print('Failed to deleted employee: ${response.body}');
-        throw Exception('Failed to deleted employee: ${response.body}');
+        print('Failed to delete employee: ${response.body}');
+        throw Exception('Failed to delete employee: ${response.body}');
       }
     } catch (e) {
       print('Error connecting to server: $e');
       rethrow;
     }
   }
-
 }

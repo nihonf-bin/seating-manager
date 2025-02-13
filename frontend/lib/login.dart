@@ -72,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
                     String username = emailController.text;
                     String password = passwordController.text;
                     print('Login with email: $username, password: $password');
-                    var url = Uri.parse('http://172.21.66.22:3000/api/login');
+                    var url = Uri.parse('http://172.21.68.22:3000/api/login');
                     var response = await http.post(
                       url,
                       headers: {'Content-Type': 'application/json'},
