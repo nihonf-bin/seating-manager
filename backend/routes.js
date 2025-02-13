@@ -82,12 +82,12 @@ router.delete('/employees/:id', async (req, res) => {
   const deleteEmployeeQuery = 'DELETE FROM employeedb WHERE employeeid = ?';
 
   try {
-    // Update the seat arrangement
+    
     const [updateResults] = await db.query(updateSeatQuery, [employeeId]);
 
-    // Check if any seat was updated
+    
     if (updateResults.affectedRows > 0) {
-      // Delete the employee
+      
       const [deleteResults] = await db.query(deleteEmployeeQuery, [employeeId]);
 
       if (deleteResults.affectedRows > 0) {
@@ -217,7 +217,6 @@ router.get('/filled', async (req, res) => {
 });
 
 // Fetch all teams
-
 router.post('/teams', async (req, res) => {
   const { teamcolour, teamname } = req.body;
   const query = 'INSERT INTO teams (teamcolour, teamname) VALUES (?, ?)';
