@@ -6,7 +6,12 @@ class Rokkai extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: Text('Rokkai'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Rokkai'),
+          ],
+        ),
       );
   }
 }

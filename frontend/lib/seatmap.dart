@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:online_seating_chart/appstate.dart';
 import 'package:online_seating_chart/styles.dart';
+import 'package:provider/provider.dart';
 
 class Seatmap extends StatefulWidget {
   const Seatmap({
@@ -58,7 +60,7 @@ class _SeatmapState extends State<Seatmap> {
             children: List.generate(5, (index) {
               return Row(
                 children: [
-                  Seat(floor: widget.floor, cardinals: 'N', alpha: 'X', numeric: index, isWindow: true, selectedMemberData: widget.selectedMemberData),
+                  Seat(floor: widget.floor, cardinals: 'N', alpha: 'X', numeric: index+1, isWindow: true, selectedMemberData: widget.selectedMemberData),
                   SizedBox(width: 50.0),
                 ],
               );
@@ -139,57 +141,69 @@ class Seat extends StatefulWidget {
 
 class _SeatState extends State<Seat> {
   late String seatNumber;
-  late Map<String, dynamic> seatData;
-  late Color seatColor;
 
   @override
   void initState() {
     super.initState();
     seatNumber = "${widget.floor}F${widget.cardinals}${widget.alpha}${widget.numeric}";
-    seatData = {
-      'isOccupied': false,
-      'seatNumber': seatNumber,
-      'seatColor': Colors.grey,
-      'memberName': '',
-      'memberCompanyName': '',
-      'memberTeamName': '',
-    };
-    seatColor = seatData['seatColor'];
   }
 
   @override
   Widget build(BuildContext context) {
-   return TextButton(
-      onPressed: () {
-        setState(() {
-          seatColor = seatColor == Colors.grey ? Styles.primaryColor : seatColor == Styles.primaryColor ? Colors.grey : seatColor;
-        });
-        widget.selectedMemberData(seatData);
-      }, 
-      style: TextButton.styleFrom(
-        padding: EdgeInsets.all(2.0),
-        minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        side: BorderSide.none,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero), 
-        backgroundColor: Colors.transparent,
-        splashFactory: NoSplash.splashFactory, 
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: widget.isWindow ? 60 : 35,
-            height: 35,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black),
-              color: seatColor,
-            )
+   return Consumer<ApplicationState>(
+      builder: (context, appState, child) {
+        final currentSeatData = appState.getSeat(seatNumber);
+        final currentColor = currentSeatData['seatColor'] ?? Colors.grey;
+
+        return TextButton(
+          onPressed: () {
+            String? previousSeatNumber = appState.previousSeatNumber;
+      
+            if (previousSeatNumber != null && previousSeatNumber != seatNumber && currentSeatData["isOccupied"] == false) {
+              appState.updateSeat(previousSeatNumber, {
+                'seatColor': Colors.grey
+              });
+            }
+      
+            if (currentSeatData["isOccupied"] == false) {
+              appState.updateSeat(seatNumber, {
+                'seatColor': currentColor == Colors.grey ? Styles.primaryLightColor : currentColor == Styles.primaryLightColor ? Colors.grey : currentColor,
+              });
+            }
+      
+            appState.setPreviousSeatIndex(seatNumber);
+      
+            widget.selectedMemberData(currentSeatData);
+          }, 
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.all(2.0),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            side: BorderSide.none,
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero), 
+            backgroundColor: Colors.transparent,
+            splashFactory: NoSplash.splashFactory, 
           ),
-          //Text(seatNumber, style: TextStyle(fontSize: 10)),
-        ],
-      )
-    );
+          child: Column(
+            children: [
+              Container(
+                width: widget.isWindow ? 60 : 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black),
+                  color: currentColor,
+                  borderRadius: BorderRadius.circular(6), 
+                ),
+                child: Text(currentSeatData["memberName"], style: TextStyle(fontSize: 10, color: Colors.white)),
+              ),
+              // Text(currentSeatData["memberName"], style: TextStyle(fontSize: 10)),
+            ],
+          )
+        );
+      }
+     
+   );
   }
 }
 
